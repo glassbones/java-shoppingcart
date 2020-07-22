@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -71,4 +72,44 @@ public class UserController
         userService.delete(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /**
+     * Return a user object based on a given username
+     * <br>Example: <a href="http://localhost:2019/users/user/name/cinnamon">http://localhost:2019/users/user/name/cinnamon</a>
+     *
+     * @param userName the name of user (String) you seek
+     * @return JSON object of the user you seek
+     * @see UserService#findByName(String) UserService.findByName(String)
+     */
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @GetMapping(value = "/user/name/{userName}",
+            produces = "application/json")
+    public ResponseEntity<?> getUserByName(
+            @PathVariable
+                    String userName)
+    {
+        User u = userService.findByName(userName);
+        return new ResponseEntity<>(u,
+                HttpStatus.OK);
+    }
+
+    /**
+     * Returns a list of users whose username contains the given substring
+     * <br>Example: <a href="http://localhost:2019/users/user/name/like/da">http://localhost:2019/users/user/name/like/da</a>
+     *
+     * @param userName Substring of the username for which you seek
+     * @return A JSON list of users you seek
+     * @see UserService#findByNameContaining(String) UserService.findByNameContaining(String)
+     */
+    @GetMapping(value = "/user/name/like/{userName}",
+            produces = "application/json")
+    public ResponseEntity<?> getUserLikeName(
+            @PathVariable
+                    String userName)
+    {
+        List<User> u = userService.findByNameContaining(userName);
+        return new ResponseEntity<>(u,
+                HttpStatus.OK);
+    }
+
 }
