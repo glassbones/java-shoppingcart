@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +26,22 @@ public class UserServiceImpl
     @Autowired
     private CartService cartService;
 
+    @Autowired
+    private RoleService roleService;
+
+    @Override
+    public User findUserById(long id)
+    {
+        return userrepos.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " not found!"));
+    }
+
+    @Override
+    public List<User> findByNameContaining(String username)
+    {
+        return userrepos.findByUsernameContainingIgnoreCase(username.toLowerCase());
+    }
+
     @Override
     public List<User> findAll()
     {
@@ -39,12 +56,6 @@ public class UserServiceImpl
         return list;
     }
 
-    @Override
-    public User findUserById(long id)
-    {
-        return userrepos.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " not found!"));
-    }
 
     @Transactional
     @Override
@@ -53,6 +64,17 @@ public class UserServiceImpl
         userrepos.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User id " + id + " not found!"));
         userrepos.deleteById(id);
+    }
+
+    @Override
+    public User findByName(String name)
+    {
+        User uu = userrepos.findByUsername(name.toLowerCase());
+        if (uu == null)
+        {
+            throw new EntityNotFoundException("User name " + name + " not found!");
+        }
+        return uu;
     }
 
     @Transactional
